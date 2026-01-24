@@ -1,0 +1,139 @@
+using System;
+using System.IO;
+using PluginManager.Api;
+using PluginManager.Api.Capabilities.Implementations.Commands;
+using PluginManager.Api.Capabilities.Implementations.Translations;
+using PluginManager.Api.Capabilities.Implementations.Utils;
+using PluginManager.Api.Contracts;
+
+namespace HomePlugin;
+
+public class HomePlugin : BasePlugin
+{
+    public override string ModuleName => "HomePlugin";
+    public override string ModuleVersion => "1.0.1";
+    public override string ModuleAuthor => "TouchMe-Inc";
+    public override string ModuleDescription => "Home plugin";
+
+    private IPlayerLocalization _localization;
+    private ITeleportRepository _repository;
+    private IPlayerUtil _playerUtil;
+
+    private const string Tag = "[ffaaaa][Home][-] ";
+    private const int HomeLimit = 3;
+
+
+    protected override void OnLoad()
+    {
+        _repository = GetRepository();
+        _playerUtil = Capabilities.Get<IPlayerUtil>();
+        _localization = Capabilities.Get<IPlayerLocalizationFactory>().Create(Path.Combine(ModulePath, "lang"));
+
+        RegisterCommand("home", "The command allows you to teleport to saved points", OnTriggeredTeleport);
+    }
+
+    protected override void OnUnload()
+    {
+        if (_repository is IDisposable d) d.Dispose();
+    }
+
+    private ITeleportRepository GetRepository()
+    {
+        SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+        SQLitePCL.raw.FreezeProvider();
+        return new SqliteTeleportRepository($"Data Source={Path.Combine(ModulePath, "teleports.db")};");
+    }
+
+    private void OnTriggeredTeleport(ICommandContext ctx)
+    {
+        if (ctx.Args.Count < 1)
+        {
+            Reply(ctx, "Bad args");
+            return;
+        }
+
+        var action = ctx.Args[0].ToLower();
+
+        switch (action)
+        {
+            case "set": HandleSet(ctx); break;
+            case "remove":
+            case "rm": HandleRemove(ctx); break;
+            case "tp":
+            case "go": HandleTeleport(ctx); break;
+            default:
+                Reply(ctx, "Unknown action", action);
+                break;
+        }
+    }
+
+    private void HandleSet(ICommandContext ctx)
+    {
+        if (ctx.Args.Count < 2)
+        {
+            Reply(ctx, "Bad args set home");
+            return;
+        }
+
+        if (_repository.GetPointsCount(ctx.ClientInfo.CrossplatformId) >= HomeLimit)
+        {
+            Reply(ctx, "Home limited", HomeLimit);
+            return;
+        }
+
+        var name = ctx.Args[1];
+        var position = _playerUtil.GetPlayerPosition(ctx.ClientInfo.EntityId);
+
+        if (position == null)
+        {
+            return;
+        }
+
+        _repository.AddPoint(new TeleportPoint
+            { UserId = ctx.ClientInfo.CrossplatformId, Name = name, X = position.X, Y = position.Y, Z = position.Z });
+
+        Reply(ctx, "Home saved", name);
+    }
+
+    private void HandleRemove(ICommandContext ctx)
+    {
+        if (ctx.Args.Count < 2)
+        {
+            Reply(ctx, "Bad args remove home");
+            return;
+        }
+
+        var name = ctx.Args[1];
+
+        if (_repository.RemovePoint(ctx.ClientInfo.CrossplatformId, name) > 0)
+        {
+            Reply(ctx, "Home removed", name);
+        }
+    }
+
+    private void HandleTeleport(ICommandContext ctx)
+    {
+        if (ctx.Args.Count < 2)
+        {
+            Reply(ctx, "Bad args tp home");
+            return;
+        }
+
+        var name = ctx.Args[1];
+    
+        if (!_repository.TryGetPoint(ctx.ClientInfo.CrossplatformId, name, out var point))
+        {
+            Reply(ctx, "Home not found", name);
+            return;
+        }
+
+        _playerUtil.Teleport(ctx.ClientInfo.EntityId, new Vector3(point.X, point.Y, point.Z));
+    }
+
+
+    private void Reply(ICommandContext ctx, string key, params object[] args)
+    {
+        var text = _localization.Translate(ctx.ClientInfo.CrossplatformId, key, args);
+        _playerUtil.PrintToChat(ctx.ClientInfo.EntityId, $"{Tag}{text}");
+    }
+}

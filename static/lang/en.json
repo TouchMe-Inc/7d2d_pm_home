@@ -1,0 +1,14 @@
+{
+  "Bad args": "Invalid arguments. Example: /home <action>",
+  "Bad args set home": "Invalid arguments. Example: /home set myhome",
+  "Bad args remove home": "Invalid arguments. Example: /home remove myhome",
+  "Bad args tp home": "Invalid arguments. Example: /home tp myhome",
+
+  "Home saved": "Home saved: {0}",
+  "Home removed": "Home removed: {0}",
+  "Home limited": "Home limit reached: {0}",
+  "Home not found": "Home not found: {0}",
+
+  "Unknown action": "Unknown action: {0}. Available: set, remove, tp"
+}
+

@@ -1,0 +1,13 @@
+{
+  "Bad args": "Неверные аргументы. Пример: /home <команда>",
+  "Bad args set home": "Неверные аргументы. Пример: /home set myhome",
+  "Bad args remove home": "Неверные аргументы. Пример: /home remove myhome",
+  "Bad args tp home": "Неверные аргументы. Пример: /home tp myhome",
+  
+  "Home saved": "Дом сохранён: {0}",
+  "Home removed": "Дом удалён: {0}",
+  "Home limited": "Достигнут лимит домов: {0}",
+  "Home not found": "Дом не найден: {0}",
+  
+  "Unknown action": "Неизвестное действие: {0}. Доступны: set, remove, tp"
+}
