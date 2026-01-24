@@ -1,0 +1,8 @@
+{
+  "Bad args": "Invalid arguments",
+  "Bad args set home": "Invalid arguments for setting home",
+  "Bad args go home": "Invalid arguments for going home",
+  "Home saved": "Home saved: {0}",
+  "Home not found": "Home not found: {0}",
+  "Unknown action": "Unknown action: {0}"
+}
