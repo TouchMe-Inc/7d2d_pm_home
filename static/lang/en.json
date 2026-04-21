@@ -1,14 +1,15 @@
 {
-  "Bad args": "Invalid arguments. Example: /home <action>",
-  "Bad args set home": "Invalid arguments. Example: /home set myhome",
-  "Bad args remove home": "Invalid arguments. Example: /home remove myhome",
-  "Bad args tp home": "Invalid arguments. Example: /home tp myhome",
+  "Bad args": "Invalid arguments. Usage: [FFFF55]/home <command>[-]",
+  "Bad args set home": "Invalid arguments. Usage: [FFFF55]/home set <name>[-]",
+  "Bad args remove home": "Invalid arguments. Usage: [FFFF55]/home remove <name>[-]",
+  "Bad args tp home": "Invalid arguments. Usage: [FFFF55]/home tp <name>[-]",
+
+  "Next teleport time": "Teleport unavailable. Available on day {0} at {1:00}:{2:00}",
 
   "Home saved": "Home saved: {0}",
   "Home removed": "Home removed: {0}",
-  "Home limited": "Home limit reached: {0}",
+  "Home limited": "You have reached the home limit: {0}",
   "Home not found": "Home not found: {0}",
 
-  "Unknown action": "Unknown action: {0}. Available: set, remove, tp"
+  "Unknown action": "Unknown action: {0}. Available commands: [FFFF55]set[-], [FFFF55]remove[-], [FFFF55]tp[-]"
 }
-
