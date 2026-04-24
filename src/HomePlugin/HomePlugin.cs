@@ -6,6 +6,8 @@ using PluginManager.Api.Capabilities.Implementations.Commands;
 using PluginManager.Api.Capabilities.Implementations.Translations;
 using PluginManager.Api.Capabilities.Implementations.Utils;
 using PluginManager.Api.Contracts;
+using PluginManager.Config;
+using PluginManager.Localization;
 
 namespace HomePlugin;
 
@@ -20,10 +22,7 @@ public class HomePlugin : BasePlugin
     private ITeleportRepository _repository;
     private IPlayerUtil _playerUtil;
     private IGameUtil _gameUtil;
-
-    private const string Tag = "[ffaaaa][Home][-] ";
-    private const int HomeLimit = 3;
-    private const ulong Delay = 3000;
+    private PluginConfig _pluginConfig;
 
     private readonly Dictionary<string, ulong> _teleports = new();
 
@@ -32,7 +31,11 @@ public class HomePlugin : BasePlugin
         _repository = GetRepository();
         _playerUtil = Capabilities.Get<IPlayerUtil>();
         _gameUtil = Capabilities.Get<IGameUtil>();
-        _localization = Capabilities.Get<IPlayerLocalizationFactory>().Create(Path.Combine(ModulePath, "lang"));
+        
+        var playerLanguageStore = Capabilities.Get<IPlayerLanguageStore>();
+        _localization = new JsonPlayerLocalizationFactory(playerLanguageStore).Create(Path.Combine(ModulePath, "lang"));
+
+        _pluginConfig = new JsonConfigReader().Read<PluginConfig>(Path.Combine(ModulePath, "config.json"));
 
         RegisterCommand("home", "The command allows you to teleport to saved points", OnTriggeredTeleport);
     }
@@ -81,9 +84,9 @@ public class HomePlugin : BasePlugin
             return;
         }
 
-        if (_repository.GetPointsCount(ctx.ClientInfo.CrossplatformId) >= HomeLimit)
+        if (_repository.GetPointsCount(ctx.ClientInfo.CrossplatformId) >= _pluginConfig.HomeLimit)
         {
-            Reply(ctx, "Home limited", HomeLimit);
+            Reply(ctx, "Home limited", _pluginConfig.HomeLimit);
             return;
         }
 
@@ -146,14 +149,15 @@ public class HomePlugin : BasePlugin
             return;
         }
 
-        _teleports[platformId] = worldTime + Delay;
+        _teleports[platformId] = worldTime + _pluginConfig.Delay;
 
         _playerUtil.Teleport(ctx.ClientInfo.EntityId, new Vector3(point.X, point.Y, point.Z));
     }
 
     private void Reply(ICommandContext ctx, string key, params object[] args)
     {
+        var tag = _localization.Translate(ctx.ClientInfo.CrossplatformId, "Tag");
         var text = _localization.Translate(ctx.ClientInfo.CrossplatformId, key, args);
-        _playerUtil.PrintToChat(ctx.ClientInfo.EntityId, $"{Tag}{text}");
+        _playerUtil.PrintToChat(ctx.ClientInfo.EntityId, $"{tag}{text}");
     }
 }

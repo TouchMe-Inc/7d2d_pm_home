@@ -46,6 +46,7 @@
         <Reference Include="System.Xml"/>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="PluginConfig.cs" />
         <Compile Include="HomePlugin.cs" />
         <Compile Include="ITeleportRepository.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
@@ -61,6 +62,14 @@
     <ItemGroup>
         <Reference Include="PluginManager.Api">
             <HintPath>$(PluginManagerApiPath)PluginManager.Api.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="PluginManager.Localization">
+            <HintPath>$(PluginManagerApiPath)PluginManager.Localization.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="PluginManager.Config">
+            <HintPath>$(PluginManagerApiPath)PluginManager.Config.dll</HintPath>
             <Private>False</Private>
         </Reference>
     </ItemGroup>

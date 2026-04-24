@@ -1,4 +1,6 @@
 {
+  "Tag": "[ffaaaa][Home][-] ",
+  
   "Bad args": "Неверные аргументы. Использование: [FFFF55]/home <команда>[-]",
   "Bad args set home": "Неверные аргументы. Использование: [FFFF55]/home set <имя>[-]",
   "Bad args remove home": "Неверные аргументы. Использование: [FFFF55]/home remove <имя>[-]",
