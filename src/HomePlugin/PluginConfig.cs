@@ -3,5 +3,5 @@
 public class PluginConfig
 {
     public int HomeLimit { get; set; }
-    public ulong Delay { get; set; }
+    public long Delay { get; set; }
 }

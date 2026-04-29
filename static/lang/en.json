@@ -1,17 +1,14 @@
 {
-  "Tag": "[ffaaaa][Home][-] ",
-  
-  "Bad args": "Invalid arguments. Usage: [FFFF55]/home <command>[-]",
-  "Bad args set home": "Invalid arguments. Usage: [FFFF55]/home set <name>[-]",
-  "Bad args remove home": "Invalid arguments. Usage: [FFFF55]/home remove <name>[-]",
-  "Bad args tp home": "Invalid arguments. Usage: [FFFF55]/home tp <name>[-]",
+  "Tag": "[EE6C72][Home][-] ",
 
-  "Next teleport time": "Teleport unavailable. Available on day {0} at {1:00}:{2:00}",
+  "Bad args set home": "Save home: [6FDC64]/sethome <name>[-]",
+  "Bad args remove home": "Remove home: [6FDC64]/delhome <name>[-]",
+  "Bad args tp home": "Go home: [6FDC64]/home <name>[-]",
 
-  "Home saved": "Home saved: {0}",
-  "Home removed": "Home removed: {0}",
-  "Home limited": "You have reached the home limit: {0}",
-  "Home not found": "Home not found: {0}",
+  "Teleport cooldown": "Quick teleport on cooldown: [6FDC64]{0:hh\\:mm\\:ss}[-]",
 
-  "Unknown action": "Unknown action: {0}. Available commands: [FFFF55]set[-], [FFFF55]remove[-], [FFFF55]tp[-]"
+  "Home saved": "Home saved: [F0A66D]{0}[-]",
+  "Home removed": "Home removed: [F0A66D]{0}[-]",
+  "Home limited": "Home limit reached: [F0A66D]{0}[-]",
+  "Home not found": "Home not found: [F0A66D]{0}[-]"
 }

@@ -14,30 +14,27 @@ namespace HomePlugin;
 public class HomePlugin : BasePlugin
 {
     public override string ModuleName => "HomePlugin";
-    public override string ModuleVersion => "1.1.0";
+    public override string ModuleVersion => "1.2.0";
     public override string ModuleAuthor => "TouchMe-Inc";
     public override string ModuleDescription => "Home plugin";
 
-    private IPlayerLocalization _localization;
     private ITeleportRepository _repository;
-    private IPlayerUtil _playerUtil;
-    private IGameUtil _gameUtil;
+    private IPlayerLocalization _localization;
     private PluginConfig _pluginConfig;
+    private IPlayerUtil _playerUtil;
 
-    private readonly Dictionary<string, ulong> _teleports = new();
+    private readonly Dictionary<string, long> _nextTeleportTime = new();
 
     protected override void OnLoad()
     {
         _repository = GetRepository();
+        _localization = GetPlayerLocalization();
+        _pluginConfig = ReadPluginConfig();
         _playerUtil = Capabilities.Get<IPlayerUtil>();
-        _gameUtil = Capabilities.Get<IGameUtil>();
-        
-        var playerLanguageStore = Capabilities.Get<IPlayerLanguageStore>();
-        _localization = new JsonPlayerLocalizationFactory(playerLanguageStore).Create(Path.Combine(ModulePath, "lang"));
-
-        _pluginConfig = new JsonConfigReader().Read<PluginConfig>(Path.Combine(ModulePath, "config.json"));
 
         RegisterCommand("home", "The command allows you to teleport to saved points", OnTriggeredTeleport);
+        RegisterCommand("sethome", "The command allows you to teleport to saved points", OnTriggeredSet);
+        RegisterCommand("delhome", "The command allows you to teleport to saved points", OnTriggeredRemove);
     }
 
     protected override void OnUnload()
@@ -45,40 +42,9 @@ public class HomePlugin : BasePlugin
         if (_repository is IDisposable d) d.Dispose();
     }
 
-    private ITeleportRepository GetRepository()
-    {
-        SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
-        SQLitePCL.raw.FreezeProvider();
-
-        return new SqliteTeleportRepository($"Data Source={Path.Combine(ModulePath, "teleports.db")};");
-    }
-
-    private void OnTriggeredTeleport(ICommandContext ctx)
+    private void OnTriggeredSet(ICommandContext ctx)
     {
         if (ctx.Args.Count < 1)
-        {
-            Reply(ctx, "Bad args");
-            return;
-        }
-
-        var action = ctx.Args[0].ToLower();
-
-        switch (action)
-        {
-            case "set": HandleSet(ctx); break;
-            case "remove":
-            case "rm": HandleRemove(ctx); break;
-            case "tp":
-            case "go": HandleTeleport(ctx); break;
-            default:
-                Reply(ctx, "Unknown action", action);
-                break;
-        }
-    }
-
-    private void HandleSet(ICommandContext ctx)
-    {
-        if (ctx.Args.Count < 2)
         {
             Reply(ctx, "Bad args set home");
             return;
@@ -90,13 +56,11 @@ public class HomePlugin : BasePlugin
             return;
         }
 
-        var name = ctx.Args[1];
+        var name = ctx.Args[0];
         var position = _playerUtil.GetPlayerPosition(ctx.ClientInfo.EntityId);
 
         if (position == null)
-        {
             return;
-        }
 
         _repository.AddPoint(new TeleportPoint
             { UserId = ctx.ClientInfo.CrossplatformId, Name = name, X = position.X, Y = position.Y, Z = position.Z });
@@ -104,15 +68,15 @@ public class HomePlugin : BasePlugin
         Reply(ctx, "Home saved", name);
     }
 
-    private void HandleRemove(ICommandContext ctx)
+    private void OnTriggeredRemove(ICommandContext ctx)
     {
-        if (ctx.Args.Count < 2)
+        if (ctx.Args.Count < 1)
         {
             Reply(ctx, "Bad args remove home");
             return;
         }
 
-        var name = ctx.Args[1];
+        var name = ctx.Args[0];
 
         if (_repository.RemovePoint(ctx.ClientInfo.CrossplatformId, name) > 0)
         {
@@ -120,15 +84,15 @@ public class HomePlugin : BasePlugin
         }
     }
 
-    private void HandleTeleport(ICommandContext ctx)
+    private void OnTriggeredTeleport(ICommandContext ctx)
     {
-        if (ctx.Args.Count < 2)
+        if (ctx.Args.Count < 1)
         {
             Reply(ctx, "Bad args tp home");
             return;
         }
 
-        var name = ctx.Args[1];
+        var name = ctx.Args[0];
         var platformId = ctx.ClientInfo.CrossplatformId;
 
         if (!_repository.TryGetPoint(platformId, name, out var point))
@@ -137,19 +101,16 @@ public class HomePlugin : BasePlugin
             return;
         }
 
-        var worldTime = _gameUtil.GetWorldTime();
+        var unixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-        if (_teleports.TryGetValue(platformId, out var nextTeleportTime) && nextTeleportTime > worldTime)
+        if (_nextTeleportTime.TryGetValue(platformId, out var nextTeleportTime) && nextTeleportTime > unixTime)
         {
-            Reply(ctx, "Next teleport time",
-                _gameUtil.WorldTimeToDays(nextTeleportTime),
-                _gameUtil.WorldTimeToHours(nextTeleportTime),
-                _gameUtil.WorldTimeToMinutes(nextTeleportTime)
-            );
+            var cooldown = TimeSpan.FromSeconds(unixTime - nextTeleportTime);
+            Reply(ctx, "Teleport cooldown", cooldown);
             return;
         }
 
-        _teleports[platformId] = worldTime + _pluginConfig.Delay;
+        _nextTeleportTime[platformId] = unixTime + _pluginConfig.Delay;
 
         _playerUtil.Teleport(ctx.ClientInfo.EntityId, new Vector3(point.X, point.Y, point.Z));
     }
@@ -159,5 +120,25 @@ public class HomePlugin : BasePlugin
         var tag = _localization.Translate(ctx.ClientInfo.CrossplatformId, "Tag");
         var text = _localization.Translate(ctx.ClientInfo.CrossplatformId, key, args);
         _playerUtil.PrintToChat(ctx.ClientInfo.EntityId, $"{tag}{text}");
+    }
+
+    private ITeleportRepository GetRepository()
+    {
+        SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+        SQLitePCL.raw.FreezeProvider();
+
+        return new SqliteTeleportRepository($"Data Source={Path.Combine(ModulePath, "teleports.db")};");
+    }
+
+    private IPlayerLocalization GetPlayerLocalization()
+    {
+        var playerLanguageStore = Capabilities.Get<IPlayerLanguageStore>();
+        return _localization = new JsonPlayerLocalizationFactory(playerLanguageStore)
+            .Create(Path.Combine(ModulePath, "lang"));
+    }
+
+    private PluginConfig ReadPluginConfig()
+    {
+        return new JsonConfigReader().Read<PluginConfig>(Path.Combine(ModulePath, "config.json"));
     }
 }

@@ -1,17 +1,14 @@
 {
-  "Tag": "[ffaaaa][Home][-] ",
+  "Tag": "[EE6C72][Home][-] ",
   
-  "Bad args": "Неверные аргументы. Использование: [FFFF55]/home <команда>[-]",
-  "Bad args set home": "Неверные аргументы. Использование: [FFFF55]/home set <имя>[-]",
-  "Bad args remove home": "Неверные аргументы. Использование: [FFFF55]/home remove <имя>[-]",
-  "Bad args tp home": "Неверные аргументы. Использование: [FFFF55]/home tp <имя>[-]",
+  "Bad args set home": "Сохранить дом: [6FDC64]/sethome <имя>[-]",
+  "Bad args remove home": "Удалить дом: [6FDC64]/delhome <имя>[-]",
+  "Bad args tp home": "Переместиться к дому: [6FDC64]/home <имя>[-]",
 
-  "Next teleport time": "Телепортация недоступна. Доступна: день {0}, {1:00}:{2:00}",
+  "Teleport cooldown": "Быстрое перемещение перезаряжается: [6FDC64]{0:hh\\:mm\\:ss}[-]",
 
-  "Home saved": "Дом сохранён: {0}",
-  "Home removed": "Дом удалён: {0}",
-  "Home limited": "Вы достигли лимита домов: {0}",
-  "Home not found": "Дом не найден: {0}",
-
-  "Unknown action": "Неизвестное действие: {0}. Доступные команды: [FFFF55]set[-], [FFFF55]remove[-], [FFFF55]tp[-]"
+  "Home saved": "Дом сохранён: [F0A66D]{0}[-]",
+  "Home removed": "Дом удалён: [F0A66D]{0}[-]",
+  "Home limited": "Вы достигли лимита домов: [F0A66D]{0}[-]",
+  "Home not found": "Дом не найден: [F0A66D]{0}[-]"
 }
